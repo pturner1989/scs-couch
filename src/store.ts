@@ -32,6 +32,10 @@ export const MAX_BODY_BYTES = 1024 * 1024;
 /** Kebab-case names, with `/` between an initiative and its deliverable. */
 const CONCEPT_NAME = /^[a-z0-9]+(-[a-z0-9]+)*(\/[a-z0-9]+(-[a-z0-9]+)*)*$/;
 
+export function isConceptName(name: string): boolean {
+  return CONCEPT_NAME.test(name);
+}
+
 const NUMBER_DIGITS = 6;
 
 export interface Concept {
@@ -155,7 +159,7 @@ export async function createConcept(
   name: string,
   repositoryUrls: string[],
 ): Promise<Result<Concept>> {
-  if (!CONCEPT_NAME.test(name)) {
+  if (!isConceptName(name)) {
     return fail({
       error_code: 'invalid_concept_name',
       message: `concept names are kebab-case, with / between an initiative and a deliverable; got ${name}`,
