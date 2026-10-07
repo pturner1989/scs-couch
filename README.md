@@ -62,8 +62,31 @@ by that name.
   with the URL above and no authentication, then select it when you create a
   session.
 
-## Tools
+## Import from sddv2
 
+sddv2 kept its artifacts as files in `.sdd/`. The image includes an importer
+that loads them into the database, so sddv3 carries on from them. It maps
+`<initiative>/roadmap.md` and `research.md` to the concept `<initiative>`, and
+`<initiative>/<deliverable>/{specification,design,tasks}.md` to the concept
+`<initiative>/<deliverable>`. It leaves `handbook.md`, `index.md`, `probes/` and
+any file with no matching kind in the repository. Each artifact starts with a
+line naming the file it came from, so `.sdd/` links in it lead to the archive.
+
+The artifacts skill finds concepts by the repository's `origin`, so pass every
+address the repository is cloned from:
+
+```bash
+docker run --rm --env-file scs.env -v "$PWD/.sdd:/sdd:ro" \
+  ghcr.io/pturner1989/scs-couch:latest node dist/import-sddv2.js \
+  --repository-url git@github.com:acme/widget.git \
+  --repository-url https://github.com/acme/widget \
+  /sdd
+```
+
+`--dry-run` prints the plan and writes nothing. A second run changes nothing,
+and a run after a file changed saves that file as the next revision.
+
+## Tools
 
 | Tool | Does |
 |---|---|
