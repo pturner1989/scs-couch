@@ -1,0 +1,40 @@
+# scs-couch with a CouchDB of its own. Set COUCHDB_PASSWORD in .env next to
+# this file, then run `docker compose up -d`. The MCP endpoint is
+# http://localhost:8080/mcp.
+#
+# To use a CouchDB you already run, delete the couchdb service and the
+# depends_on entry, and set COUCHDB_URL to its address.
+
+services:
+  scs:
+    image: ghcr.io/pturner1989/scs-couch:latest
+    build: .
+    environment:
+      COUCHDB_URL: http://couchdb:5984
+      COUCHDB_USER: ${COUCHDB_USER:-admin}
+      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD:?set COUCHDB_PASSWORD in .env}
+    depends_on:
+      couchdb:
+        condition: service_healthy
+    # The server has no authentication. Publish it only on an address you
+    # trust; this binds it to the local machine.
+    ports:
+      - "127.0.0.1:8080:8080"
+    restart: unless-stopped
+
+  couchdb:
+    image: couchdb:3
+    environment:
+      COUCHDB_USER: ${COUCHDB_USER:-admin}
+      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD:?set COUCHDB_PASSWORD in .env}
+    volumes:
+      - couchdb-data:/opt/couchdb/data
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://127.0.0.1:5984/_up"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  couchdb-data:
